@@ -9,9 +9,19 @@ import SwiftUI
 
 @main
 struct Spatial_ViolinApp: App {
+    @State private var immersionStyle: ImmersionStyle = .mixed
+    @State private var appModel = AppModel()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(appModel)
         }
+
+        ImmersiveSpace(id: "ViolinSpace") {
+            ViolinImmersiveView()
+                .environment(appModel)
+        }
+        .immersionStyle(selection: $immersionStyle, in: .mixed)
     }
 }
