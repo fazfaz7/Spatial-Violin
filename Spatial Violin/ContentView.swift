@@ -16,45 +16,96 @@ struct ContentView: View {
     var body: some View {
         @Bindable var appModel = appModel
 
-        VStack(spacing: 28) {
-            Text("Spatial Violin")
-                .font(.extraLargeTitle)
-                .fontWeight(.bold)
+        ScrollView {
+            VStack(spacing: 28) {
+                Text("Spatial Violin")
+                    .font(.extraLargeTitle)
+                    .fontWeight(.bold)
 
-            Button(isPlaying ? "Stop" : "Start Playing") {
-                Task {
-                    if isPlaying {
-                        await dismissImmersiveSpace()
-                    } else {
-                        await openImmersiveSpace(id: "ViolinSpace")
+                Button(isPlaying ? "Stop" : "Start Playing") {
+                    Task {
+                        if isPlaying {
+                            await dismissImmersiveSpace()
+                        } else {
+                            await openImmersiveSpace(id: "ViolinSpace")
+                        }
+                        isPlaying.toggle()
                     }
-                    isPlaying.toggle()
                 }
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-
-            Divider()
-
-            VStack(spacing: 16) {
-                sliderRow("Scale", value: $appModel.violinScale, in: 0.001...0.5, format: "%.4f")
-                sliderRow("Arm offset", value: $appModel.armOffset, in: 0.05...0.6, format: "%.2f m")
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
 
                 Divider()
 
-                Text("Rotation correction (degrees)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                // MARK: Violin controls
+                VStack(spacing: 16) {
+                    sectionHeader("Violin")
 
-                sliderRow("Rotate X", value: $appModel.rotationX, in: -180...180, format: "%.0f°")
-                sliderRow("Rotate Y", value: $appModel.rotationY, in: -180...180, format: "%.0f°")
-                sliderRow("Rotate Z", value: $appModel.rotationZ, in: -180...180, format: "%.0f°")
+                    sliderRow("Scale",      value: $appModel.violinScale, in: 0.001...0.5,  format: "%.4f")
+                    sliderRow("Arm offset", value: $appModel.armOffset,   in: 0.01...0.6,   format: "%.2f m")
+                    sliderRow("Y offset",   value: $appModel.yOffset,     in: -0.3...0.3,   format: "%.2f m")
+
+                    sectionHeader("Violin rotation (degrees)")
+
+                    sliderRow("Rotate X", value: $appModel.rotationX, in: -180...180, format: "%.0f°")
+                    sliderRow("Rotate Y", value: $appModel.rotationY, in: -180...180, format: "%.0f°")
+                    sliderRow("Rotate Z", value: $appModel.rotationZ, in: -180...180, format: "%.0f°")
+                }
+                .padding(.horizontal, 8)
+
+                Divider()
+
+                // MARK: Bow controls
+                VStack(spacing: 16) {
+                    sectionHeader("Bow")
+
+                    sliderRow("Scale", value: $appModel.bowScale, in: 0.001...0.5, format: "%.4f")
+                    sliderRow("Arm offset", value: $appModel.bowArmOffset,  in: 0.01...0.6, format: "%.2f m")
+                    sliderRow("Y offset",   value: $appModel.bowYOffset,    in: -0.3...0.3, format: "%.2f m")
+
+                    sectionHeader("Bow rotation (degrees)")
+
+                    sliderRow("Rotate X", value: $appModel.bowRotationX, in: -180...180, format: "%.0f°")
+                    sliderRow("Rotate Y", value: $appModel.bowRotationY, in: -180...180, format: "%.0f°")
+                    sliderRow("Rotate Z", value: $appModel.bowRotationZ, in: -180...180, format: "%.0f°")
+
+                    sectionHeader("Bow pivot correction (local space)")
+
+                    sliderRow("Pivot X", value: $appModel.bowPivotX, in: -0.5...0.5, format: "%.3f m")
+                    sliderRow("Pivot Y", value: $appModel.bowPivotY, in: -0.5...0.5, format: "%.3f m")
+                    sliderRow("Pivot Z", value: $appModel.bowPivotZ, in: -0.5...0.5, format: "%.3f m")
+                }
+                .padding(.horizontal, 8)
+
+                Divider()
+
+                // MARK: Visibility
+                HStack(spacing: 12) {
+                    Button(action: { appModel.violinVisible.toggle() }) {
+                        Label(appModel.violinVisible ? "Hide Violin" : "Show Violin",
+                              systemImage: appModel.violinVisible ? "eye.slash" : "eye")
+                    }
+                    .buttonStyle(.bordered)
+
+                    Button(action: { appModel.bowVisible.toggle() }) {
+                        Label(appModel.bowVisible ? "Hide Bow" : "Show Bow",
+                              systemImage: appModel.bowVisible ? "eye.slash" : "eye")
+                    }
+                    .buttonStyle(.bordered)
+                }
+                .padding(.bottom, 16)
             }
-            .padding(.horizontal, 8)
+            .padding(32)
         }
-        .padding(32)
         .frame(minWidth: 360)
+    }
+
+    @ViewBuilder
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     @ViewBuilder
